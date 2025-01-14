@@ -22,9 +22,26 @@ int* idArr = new int[size];
 int* countArr = new int[size];
 double* priceArr = new double[size];
 std::string* nameArr = new std::string[size];
+//---------------------------------------
+//Чек
+int sizeCheck = 1;
+int* countCheckArr = new int[sizeCheck];
+double* priceCheckArr = new double[sizeCheck];
+double* totalPriceCheckArr = new double[sizeCheck];
+std::string* nameCheckArr = new std::string[sizeCheck];
+
+
 
 //-----------------------------------
+//Деньги
+double cash = 100000;
+double emony = 0;
+double cashMoney = 0;
 
+
+
+
+//----------------------------------
 
 //Функции
 void Start();
@@ -38,10 +55,14 @@ void StaffRedact();
 void RefilStorage();
 void RemoveStaff();
 void StorageRedact();
+void PrintCheck(long double& totalSum);
 void CgangePrice();
 void AddProduct();
+void AddCheckItem();
 void ChangeStaff();
 void RemoveFromStorage();
+void Selling();
+void Income();
 
 template <typename ArrType>
 void FillStorage(ArrType staicArr[], ArrType dynamicArr[], int size);
@@ -97,6 +118,16 @@ void Start()
 
 
 }
+bool isStringDigit(std::string string) {
+    for (int i = 0; i < string.size(); i++)
+    {
+        if (!std::isdigit(string[i]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
 bool Login()
 {
     while (true)
@@ -146,7 +177,7 @@ void ShopUserMenu()
         } while (choose.size() > 1 && choose[0] < 48 || choose[0] > 53);
         if (choose == "1")
         {
-
+            Selling();
         }
         else if (choose == "2")
         {
@@ -162,7 +193,7 @@ void ShopUserMenu()
         }
         else if (choose == "5")
         {
-
+            Income();
         }
         else
         {
@@ -171,6 +202,219 @@ void ShopUserMenu()
     }
 }
 
+void Selling()
+{
+    std::string chooseId, chooseCount, choosePay, userCash, tempChoose;
+    int id{}, count{};
+    bool isFirst = true;
+    sizeCheck = 1;
+    long double totalSum{};
+    double discount = 0.2;
+
+    delete[]priceCheckArr;
+    delete[]countCheckArr;
+    delete[]totalPriceCheckArr;
+    delete[]nameCheckArr;
+
+    priceCheckArr = new double[sizeCheck];
+    countCheckArr = new int[sizeCheck];
+    totalPriceCheckArr = new double[sizeCheck];
+    nameCheckArr = new std::string[sizeCheck];
+
+    while (true)
+    {
+        system("cls");
+        std::cout << "Желаете совершить покупки?\nВведите 1 - чтобы продолжить или 0 - для выхода\nВвод: ";
+        std::getline(std::cin, tempChoose, '\n');
+        if (tempChoose == "1")
+        {
+            ShowStorage();
+            std::cout << "Введите ID товара для покупки: ";
+            std::getline(std::cin, chooseId, '\n');
+            if (!isStringDigit(chooseId))
+            {
+                std::cout << "\nНеверный ID\n";
+                continue;
+            }
+            else if (isStringDigit(chooseId))
+            {
+                id = std::stoi(chooseId);
+                if (id == 0)
+                {
+                    if (!isFirst)
+                    {
+                        if (totalSum >= 100000)
+                        {
+                            totalSum -= (totalSum * discount);
+                            continue;
+                        }
+                        PrintCheck(totalSum);
+                        std::cout << "\n\n\tИтоговая сумма: " << std::fixed << totalSum << " рублей\n\n\n";
+                        while (true)
+                        {
+                            std::cout << "Выберите способ оплаты:\n1 - Наличные\n2 - Безналичные\nВвод: ";
+                            std::getline(std::cin, choosePay, '\n');
+                            if (!isStringDigit(choosePay))
+                            {
+                                std::cout << "Некорректный ввод\n\n";
+                            }
+                            else
+                            {
+                                if (std::stoi(choosePay) == 1)
+                                {
+                                    while (true)
+                                    {
+                                        std::cout << "Введите сумму наличных: ";
+                                        std::getline(std::cin, userCash, '\n');
+                                        if (!isStringDigit(userCash))
+                                        {
+                                            std::cout << "Некорректный ввод!!\n\n";
+                                        }
+                                        else
+                                        {
+                                            if (std::stod(userCash) < totalSum)
+                                            {
+                                                std::cout << "Недостаточно средств\n\n";
+                                            }
+                                            else if (cash >= std::stod(userCash) - totalSum)
+                                            {
+                                                std::cout << "\n\nВы дали: " << std::stod(userCash) << "\n\nОплата прошла успешно!\n\n" << "Сдача: " << std::stod(userCash) - totalSum << " руб.\n\n";
+                                                cashMoney += totalSum;
+                                                cash += std::stod(userCash);
+                                                cash -= std::stod(userCash) - totalSum;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                }
+                                else if (std::stoi(choosePay) == 2)
+                                {
+                                    std::cout << "Оплата прошла успешно!\n\n";
+                                    emony += totalSum;
+                                    break;
+                                }
+                                else
+                                {
+                                    std::cout << "Некорректный ввод!!\n\n";
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else if (id > 0 && id <= size)
+                {
+                    while (true)
+                    {
+                        std::cout << "Введите количество товара " << nameArr[id - 1] << ": ";
+                        std::getline(std::cin, chooseCount, '\n');
+                        if (!isStringDigit(chooseCount))
+                        {
+                            std::cout << "\n\nНекорректный ввод\n\n";
+                            continue;
+                        }
+                        else if (isStringDigit(chooseCount))
+                        {
+                            count = std::stod(chooseCount);
+                            if (count > 0 && count <= countArr[id - 1])
+                            {
+                                std::cout << std::left << std::setw(30) << nameArr[id - 1] << " " << count << " добавлен в чек\n\n";
+                                if (isFirst)
+                                {
+                                    priceCheckArr[sizeCheck - 1] = priceArr[id - 1];
+                                    nameCheckArr[sizeCheck - 1] = nameArr[id - 1];
+                                    totalPriceCheckArr[sizeCheck - 1] = priceArr[id - 1] * count;
+                                    countCheckArr[sizeCheck - 1] = count;
+                                    totalSum += priceArr[id - 1] * count;
+                                    isFirst = false;
+                                    countArr[id - 1] -= count;
+                                }
+                                else
+                                {
+                                    AddCheckItem();
+                                    priceCheckArr[sizeCheck - 1] = priceArr[id - 1];
+                                    nameCheckArr[sizeCheck - 1] = nameArr[id - 1];
+                                    totalPriceCheckArr[sizeCheck - 1] = priceArr[id - 1] * count;
+                                    countCheckArr[sizeCheck - 1] = count;
+                                    totalSum += priceArr[id - 1] * count;
+                                    countArr[id - 1] -= count;
+                                }
+                                break;
+                            }
+                            else
+                            {
+                                std::cout << "\n\nНекорректное кол-во\n\n";
+                            }
+                        }
+                        else
+                        {
+                            std::cout << "\n\nНекорректный ввод\n\n";
+                        }
+                    }
+                }
+                else
+                {
+                    std::cout << "\n\nНекорректный ввод\n\n";
+                }
+                
+            }
+        }
+        else
+        {
+            system("cls");
+            break;
+        }
+    }
+}
+
+
+void AddCheckItem()
+{
+
+    double* tempPriceCheck = new double[sizeCheck];
+    int* tempCountCheck = new int[sizeCheck];
+    double* tempTotalPriceCheck = new double[sizeCheck];
+    std::string* tempNameCheck = new std::string[sizeCheck];
+    for (int i = 0; i < sizeCheck; i++)
+    {
+        tempPriceCheck[i] = priceCheckArr[i];
+        tempCountCheck[i] = countCheckArr[i];
+        tempTotalPriceCheck[i] = totalPriceCheckArr[i];
+        tempNameCheck[i] = nameCheckArr[i];
+    }
+
+
+    delete[]priceCheckArr;
+    delete[]countCheckArr;
+    delete[]totalPriceCheckArr;
+    delete[]nameCheckArr;
+
+    sizeCheck++;
+    countCheckArr = new int[sizeCheck];
+    priceCheckArr = new double[sizeCheck];
+    totalPriceCheckArr = new double[sizeCheck];
+    nameCheckArr = new std::string[sizeCheck];
+
+
+    for (int i = 0; i < sizeCheck - 1; i++)
+    {
+        priceCheckArr[i] = tempPriceCheck[i];
+        countCheckArr[i] = tempCountCheck[i];
+        totalPriceCheckArr[i] = tempTotalPriceCheck[i];
+        nameCheckArr[i] = tempNameCheck[i];
+    }
+
+    delete[]tempPriceCheck;
+    delete[]tempCountCheck;
+    delete[]tempTotalPriceCheck;
+    delete[]tempNameCheck;
+
+}
 
 void ShopAdminMenu()
 {
@@ -185,7 +429,7 @@ void ShopAdminMenu()
             std::cout << "4. Списать со склада\n";
             std::cout << "5. Изменить цену\n";
             std::cout << "6. Изменить склад\n";
-            std::cout << "7. Изменить персонад\n";
+            std::cout << "7. Изменить персонал\n";
             std::cout << "8. Отчёт о прибыли\n\n";
             std::cout << "0. Закрыть смену\n\n\n";
 
@@ -195,7 +439,7 @@ void ShopAdminMenu()
         } while (choose.size() > 1 && choose[0] < 48 || choose[0] > 56);
         if (choose == "1")
         {
-
+            Selling();
         }
         else if (choose == "2")
         {
@@ -223,7 +467,7 @@ void ShopAdminMenu()
         }
         else if (choose == "8")
         {
-
+            Income();
         }
         else if (choose == "0")
         {
@@ -237,106 +481,353 @@ void ShopAdminMenu()
         }
 
     }
-    void CreateStaticStorage()
+void CreateStaticStorage()
+{
+    const int staticSize = 10;
+    int idStaticArr[staticSize]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    std::string nameStaticArr[staticSize]
     {
-        const int staticSize = 10;
-        int idStaticArr[staticSize]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-        std::string nameStaticArr[staticSize]
+        "Ружьё", "Удочка", "Черви", "Капкан", "Поплавок", "Охотничий костюм", "Садок", "Поводок", "Леска", "Крючок"
+
+    };
+    int countStaticArr[staticSize]{ 2, 4, 100, 4, 10, 3, 5, 15, 50, 150 };
+    double priceStaticArr[staticSize]{ 11000.0, 3500.0, 0.2, 2000.0, 30.0, 10000.0, 800.0, 150.0, 20.0, 5.0 };
+    FillStorage(idStaticArr, idArr, staticSize);
+    FillStorage(nameStaticArr, nameArr, staticSize);
+    FillStorage(countStaticArr, countArr, staticSize);
+    FillStorage(priceStaticArr, priceArr, staticSize);
+
+}
+void PrintCheck(long double& totalSum)
+{
+    std::cout << "№\tНазвание\t\t\tКоличество\tЦена за ед\tИтого\n";
+    for (int i = 0; i < sizeCheck; i++)
+    {
+        std::cout << i + 1 << "\t" << std::left << std::setw(35) << nameCheckArr[i] << "\t" << countCheckArr[i] << "\t" << priceCheckArr[i] << "\t\t" << totalPriceCheckArr[i] << "\n\n";
+    }
+
+}
+void ShowStorage()
+{
+    std::cout << "ID\tНазвание\t\t\tКол-во\tЦена\n";
+    for (int i = 0; i < size; i++)
+    {
+        std::cout << idArr[i] << "\t" << std::left << std::setw(30) << nameArr[i] << "\t" << countArr[i] << "\t" << priceArr[i] << "\n";
+    }
+    std::cout << "\n\n";
+}
+
+void RefilStorage()
+{
+    ShowStorage();
+    bool exit = false;
+    std::string idStr, countStr,  choose;
+    int id = 0;
+    int count;
+    while (!exit)
+    {
+        while (true)
         {
-         "Ружьё", "Удочка", "Черви", "Капкан", "Поплавок", "Охотничий костюм", "Садок", "Поводок", "Леска", "Крючок"
-
-        };
-        int countStaticArr[staticSize]{ 2, 4, 100, 4, 10, 3, 5, 15, 50, 150 };
-        double priceStaticArr[staticSize]{ 11000.0, 3500.0, 0.2, 2000.0, 30.0, 10000.0, 800.0, 150.0, 20.0, 5.0 };
-        FillStorage(idStaticArr, idArr, staticSize);
-        FillStorage(nameStaticArr, nameArr, staticSize);
-        FillStorage(countStaticArr, countArr, staticSize);
-        FillStorage(priceStaticArr, priceArr, staticSize);
-
-    }
-
-    void ShowStorage()
-    {
-        std::cout << "ID\tНазвание\t\t\tКол-во\tЦена\n";
-        for (int i = 0; i < size; i++)
-        {
-            std::cout << idArr[i] << "\t" << std::left << std::setw(30) << nameArr[i] << "\t" << countArr[i] << "\t" << priceArr[i] << "\n";
-        }
-        std::cout << "\n\n";
-    }
-
-    void RefilStorage()
-    {
-        std::string idStr;
-        std::cout << "Пополнение склада \n введите id товара: ";
-        std::getline(std::cin, idStr, '\n');
-        int id = std::stoi(idStr);
-        std::cout << idArr[id - 1] << " " << nameArr[id - 1] << " ";
-
-
-    }
-
-    bool isStringDigit(std::string string) {
-        for (int i = 0; i < string.size(); i++) {
-            if (!std::isdigit(string[i])) {
-                return false;
+            std::cout << "Пополнение склада \n введите id товара: ";
+            std::getline(std::cin, idStr, '\n');
+            if (std::isdigit(idStr[0]) && idStr.size() == 1)
+            {
+                id = std::stoi(idStr);
             }
+            else if (std::isdigit(idStr[1]) && idStr.size() == 2)
+            {
+                id = std::stoi(idStr);
+            }
+            else
+            {
+                std::cout << "Ошибка ввода!!\n";
+            }
+
+            if (id > 0 && id <= size)
+            {
+                break;
+            }
+            else
+            {
+                std::cout << "Неверный ID\n";
+            }
+
+
         }
-        return true;
-    }
-    void AddEmployee()
-    {
-
-
-        userCount++;
-        std::string* tempLogin = new std::string[userCount];
-        std::string* tempPass = new std::string[userCount];
-        std::string newLogin, newPass;
-
-        std::cout << "Введите логин нового сотрудника: ";
-        std::getline(std::cin, newLogin, '\n');
-        std::cout << "Введите пароль нового сотрудника: ";
-        std::getline(std::cin, newPass, '\n');
-
-        tempLogin[userCount - 1] = newLogin;
-        tempPass[userCount - 1] = newPass;
-
-        std::swap(loginArr, tempLogin);
-        std::swap(passwordArr, tempPass);
-        delete[]tempLogin;
-        delete[]tempPass;
-    }
-    void ChangeStaff()
-    {
-        std::string choose;
+        std::cout << idArr[id - 1] << " " << nameArr[id - 1] << " ";
 
         while (true)
         {
-            std::cout << "ID\tЛогин\t\tПароль ";
-            for (int i = 0; i < userCount; i++)
+            std::cout << "Введте кол-во товара для пополнения: ";
+            std::getline(std::cin, countStr, '\n');
+
+            if (isStringDigit(countStr))
             {
-                std::cout << "\n" << i + 1 << "\t" << std::left << std::setw(10) << loginArr[i] << "\t" << passwordArr[i];
+                count = std::stoi(countStr);
+                if (count >= 0 && count < 500)
+                {
+                    break;
+                }
+                else
+                {
+                    std::cout << "Ошибка ввода!!!\n";
+                }
             }
 
-
-            std::cout << "\n\n1. Добавить нового сотрудника\n2. Отредактировать сотрудника\n3 - Удалить сотрудника\n0. Выход\n\nВвод: ";
+        }
+        while (true)
+        {
+            std::cout << "Добавить " << count << " товара(ов) " << nameArr[id - 1] << " ?";
+            std::cout << "1 - Да\t2 - Нет\t3 - Отмена\n\n";
             std::getline(std::cin, choose, '\n');
 
             if (choose == "1")
             {
-                AddEmployee();
+                countArr[id - 1] += count;
+                std::cout << "Товар успешно пополнен\n\n";
+                exit = true;
+                break;
             }
             else if (choose == "2")
             {
-                StaffRedact();
+                break;
             }
             else if (choose == "3")
             {
-                RemoveStaff();
+                exit = true;
+                break;
             }
-            else if (choose == "0")
+            else
             {
-                system("cls");
+                std::cout << "Ошибка ввода!!\n";
+            }
+        }
+    }
+        
+
+}
+
+    
+void AddEmployee()
+{
+
+
+    userCount++;
+    std::string* tempLogin = new std::string[userCount];
+    std::string* tempPass = new std::string[userCount];
+    std::string newLogin, newPass;
+
+    std::cout << "Введите логин нового сотрудника: ";
+    std::getline(std::cin, newLogin, '\n');
+    std::cout << "Введите пароль нового сотрудника: ";
+    std::getline(std::cin, newPass, '\n');
+
+    tempLogin[userCount - 1] = newLogin;
+    tempPass[userCount - 1] = newPass;
+
+    std::swap(loginArr, tempLogin);
+    std::swap(passwordArr, tempPass);
+    delete[]tempLogin;
+    delete[]tempPass;
+}
+void ChangeStaff()
+{
+    std::string choose;
+
+    while (true)
+    {
+        std::cout << "ID\tЛогин\t\tПароль ";
+        for (int i = 0; i < userCount; i++)
+        {
+            std::cout << "\n" << i + 1 << "\t" << std::left << std::setw(10) << loginArr[i] << "\t" << passwordArr[i];
+        }
+
+
+        std::cout << "\n\n1. Добавить нового сотрудника\n2. Отредактировать сотрудника\n3 - Удалить сотрудника\n0. Выход\n\nВвод: ";
+        std::getline(std::cin, choose, '\n');
+
+        if (choose == "1")
+        {
+            AddEmployee();
+        }
+        else if (choose == "2")
+        {
+            StaffRedact();
+        }
+        else if (choose == "3")
+        {
+            RemoveStaff();
+        }
+        else if (choose == "0")
+        {
+            system("cls");
+            break;
+        }
+        else
+        {
+            std::cout << "Ошибка ввода!!\n\n";
+        }
+    }
+}
+void RemoveStaff()
+{
+    system("cls");
+
+    std::string choose;
+    int empId;
+    while (true)
+    {
+        std::cout << "\nID\n";
+        for (int i = 0; i < userCount; i++)
+        {
+            std::cout << i + 1 << "\n";
+        }
+
+
+        std::cout << "\n\nВведите ID сотрудника для удаления:\t0 - Выход\nВвод: ";
+        std::getline(std::cin, choose, '\n');
+
+
+        if (choose == "0")
+        {
+            system("cls");
+            break;
+        }
+        else if (isStringDigit(choose) && choose != "1")
+        {
+            empId = std::stoi(choose);
+
+
+            if (empId < 1 || empId > userCount)
+            {
+                std::cout << "Неверный ID!!!\n\n";
+                break;
+            }
+
+            std::string* tempLogin = new std::string[userCount];
+            std::string* tempPass = new std::string[userCount];
+
+            for (int i = 0; i < userCount; i++)
+            {
+                tempLogin[i] = loginArr[i];
+                tempPass[i] = passwordArr[i];
+            }
+
+            delete[]loginArr;
+            delete[]passwordArr;
+            userCount--;
+            loginArr = new std::string[userCount];
+            passwordArr = new std::string[userCount];
+
+
+            for (int i = 0, j = 0; i < userCount, j < userCount; i++, j++)
+            {
+                if (i == empId - 1)
+                {
+                    i++;
+                    loginArr[j] = tempLogin[i];
+                    passwordArr[j] = tempPass[i];
+                }
+                else
+                {
+                    loginArr[j] = tempLogin[i];
+                    passwordArr[j] = tempPass[i];
+                }
+            }
+
+            std::cout << "\n\nСотрудник успешно удален!\n\n";
+
+            break;
+        }
+        else
+        {
+            std::cout << "Ошибка ввода!!\n\n";
+        }
+
+    }
+}
+void CgangePrice()
+{
+    std::string idStr, choose, newPriceStr;
+    int id{}, price{};
+    bool exit = false;
+    double newPrice;
+
+    while (!exit)
+    {
+
+
+        while (true)
+        {
+            std::cout << "Изменить цену\nВведите ID товара: ";
+            std::getline(std::cin, idStr, '\n');
+
+            if (std::isdigit(idStr[0]) && idStr.size() == 1)
+            {
+                id = std::stoi(idStr);
+            }
+            else if (std::isdigit(idStr[1]) && idStr.size() == 2)
+            {
+                id = std::stoi(idStr);
+            }
+            else
+            {
+                std::cout << "Ошибка ввода!!\n\n";
+            }
+            if (id > 0 && id <= size)
+            {
+                break;
+            }
+            else
+            {
+                std::cout << "Неверный ID\n\n";
+            }
+        }
+
+        std::cout << idArr[id - 1] << "\t" << nameArr[id - 1] << "\t";
+
+        while (true)
+        {
+            std::cout << "\nВведите новую цену: ";
+            std::getline(std::cin, newPriceStr, '\n');
+
+            if (isStringDigit(newPriceStr))
+            {
+                newPrice = std::stod(newPriceStr);
+
+                if (price >= 0 && price <= 10000000)
+                {
+                    break;
+                }
+
+                else
+                {
+                    std::cout << "Некоректная цена!!!\n\n";
+                }
+            }
+        }
+
+        while (true)
+        {
+
+            std::cout << "Назначить " << nameArr[id - 1] << " новую цену " << std::fixed << newPrice << " ?";
+            std::cout << "1 - Да\t2 - Нет\t3 - Отмена\n\n";
+            std::getline(std::cin, choose, '\n');
+
+            if (choose == "1")
+            {
+                priceArr[id - 1] = newPrice;
+                std::cout << "Цена успешно изменена\n\n";
+                exit = true;
+                break;
+            }
+            else if (choose == "2")
+            {
+                break;
+            }
+            else if (choose == "3")
+            {
+                exit = true;
                 break;
             }
             else
@@ -345,414 +836,255 @@ void ShopAdminMenu()
             }
         }
     }
-    void RemoveStaff()
-    {
-        system("cls");
+}
 
-        std::string choose;
-        int empId;
+void RemoveFromStorage()
+{
+    std::string idStr, removeStr, choose;
+    int id{}, remove;
+    bool exit = false;
+
+    while (!exit)
+    {
+
+
         while (true)
         {
-            std::cout << "\nID\n";
-            for (int i = 0; i < userCount; i++)
+            std::cout << "Списание со склада\nВведите ID товара: ";
+            std::getline(std::cin, idStr, '\n');
+
+            if (std::isdigit(idStr[0]) && idStr.size() == 1)
             {
-                std::cout << i + 1 << "\n";
+                id = std::stoi(idStr);
             }
-
-
-            std::cout << "\n\nВведите ID сотрудника для удаления:\t0 - Выход\nВвод: ";
-            std::getline(std::cin, choose, '\n');
-
-
-            if (choose == "0")
+            else if (std::isdigit(idStr[1]) && idStr.size() == 2)
             {
-                system("cls");
-                break;
+                id = std::stoi(idStr);
             }
-            else if (isStringDigit(choose) && choose != "1")
+            else
             {
-                empId = std::stoi(choose);
-
-
-                if (empId < 1 || empId > userCount)
-                {
-                    std::cout << "Неверный ID!!!\n\n";
-                    break;
-                }
-
-                std::string* tempLogin = new std::string[userCount];
-                std::string* tempPass = new std::string[userCount];
-
-                for (int i = 0; i < userCount; i++)
-                {
-                    tempLogin[i] = loginArr[i];
-                    tempPass[i] = passwordArr[i];
-                }
-
-                delete[]loginArr;
-                delete[]passwordArr;
-                userCount--;
-                loginArr = new std::string[userCount];
-                passwordArr = new std::string[userCount];
-
-
-                for (int i = 0, j = 0; i < userCount, j < userCount; i++, j++)
-                {
-                    if (i == empId - 1)
-                    {
-                        i++;
-                        loginArr[j] = tempLogin[i];
-                        passwordArr[j] = tempPass[i];
-                    }
-                    else
-                    {
-                        loginArr[j] = tempLogin[i];
-                        passwordArr[j] = tempPass[i];
-                    }
-                }
-
-                std::cout << "\n\nСотрудник успешно удален!\n\n";
-
+                std::cout << "Ошибка ввода!!\n";
+            }
+            if (id > 0 && id <= size)
+            {
                 break;
             }
             else
             {
-                std::cout << "Ошибка ввода!!\n\n";
-            }
-
-        }
-    }
-    void CgangePrice()
-    {
-        std::string idStr, choose, newPriceStr;
-        int id{}, price{};
-        bool exit = false;
-        double newPrice;
-
-        while (!exit)
-        {
-
-
-            while (true)
-            {
-                std::cout << "Изменить цену\nВведите ID товара: ";
-                std::getline(std::cin, idStr, '\n');
-
-                if (std::isdigit(idStr[0]) && idStr.size() == 1)
-                {
-                    id = std::stoi(idStr);
-                }
-                else if (std::isdigit(idStr[1]) && idStr.size() == 2)
-                {
-                    id = std::stoi(idStr);
-                }
-                else
-                {
-                    std::cout << "Ошибка ввода!!\n\n";
-                }
-                if (id > 0 && id <= size)
-                {
-                    break;
-                }
-                else
-                {
-                    std::cout << "Неверный ID\n\n";
-                }
-            }
-
-            std::cout << idArr[id - 1] << "\t" << nameArr[id - 1] << "\t";
-
-            while (true)
-            {
-                std::cout << "\nВведите новую цену: ";
-                std::getline(std::cin, newPriceStr, '\n');
-
-                if (isStringDigit(newPriceStr))
-                {
-                    newPrice = std::stod(newPriceStr);
-
-                    if (price >= 0 && price <= 10000000)
-                    {
-                        break;
-                    }
-
-                    else
-                    {
-                        std::cout << "Некоректная цена!!!\n\n";
-                    }
-                }
-            }
-
-            while (true)
-            {
-
-                std::cout << "Назначить " << nameArr[id - 1] << " новую цену " << std::fixed << newPrice << " ?";
-                std::cout << "1 - Да\t2 - Нет\t3 - Отмена\n\n";
-                std::getline(std::cin, choose, '\n');
-
-                if (choose == "1")
-                {
-                    priceArr[id - 1] = newPrice;
-                    std::cout << "Цена успешно изменена\n\n";
-                    exit = true;
-                    break;
-                }
-                else if (choose == "2")
-                {
-                    break;
-                }
-                else if (choose == "3")
-                {
-                    exit = true;
-                    break;
-                }
-                else
-                {
-                    std::cout << "Ошибка ввода!!\n\n";
-                }
+                std::cout << "Неверный ID\n";
             }
         }
-    }
 
-    void RemoveFromStorage()
-    {
-        std::string idStr, removeStr, choose;
-        int id{}, remove;
-        bool exit = false;
+        std::cout << idArr[id - 1] << "\t" << nameArr[id - 1] << "\t";
 
-        while (!exit)
-        {
-
-
-            while (true)
-            {
-                std::cout << "Списание со склада\nВведите ID товара: ";
-                std::getline(std::cin, idStr, '\n');
-
-                if (std::isdigit(idStr[0]) && idStr.size() == 1)
-                {
-                    id = std::stoi(idStr);
-                }
-                else if (std::isdigit(idStr[1]) && idStr.size() == 2)
-                {
-                    id = std::stoi(idStr);
-                }
-                else
-                {
-                    std::cout << "Ошибка ввода!!\n";
-                }
-                if (id > 0 && id <= size)
-                {
-                    break;
-                }
-                else
-                {
-                    std::cout << "Неверный ID\n";
-                }
-            }
-
-            std::cout << idArr[id - 1] << "\t" << nameArr[id - 1] << "\t";
-
-            while (true)
-            {
-                std::cout << "\nВведите количество товара для списания: ";
-                std::getline(std::cin, removeStr, '\n');
-
-                if (isStringDigit(removeStr))
-                {
-                    remove = std::stoi(removeStr);
-
-                    if (remove >= 0 && remove <= countArr[id - 1])
-                    {
-                        break;
-                    }
-
-                    else
-                    {
-                        std::cout << "Ошибка ввода!!!\n";
-                    }
-                }
-            }
-
-            while (true)
-            {
-
-                std::cout << "Списать " << remove << " товара(ов) " << nameArr[id - 1] << " ?";
-                std::cout << "1 - Да\t2 - Нет\t3 - Отмена\n\n";
-                std::getline(std::cin, choose, '\n');
-
-                if (choose == "1")
-                {
-                    countArr[id - 1] -= remove;
-                    std::cout << "Товар успешно списан\n\n";
-                    exit = true;
-                    break;
-                }
-                else if (choose == "2")
-                {
-                    break;
-                }
-                else if (choose == "3")
-                {
-                    exit = true;
-                    break;
-                }
-                else
-                {
-                    std::cout << "Ошибка ввода!!\n";
-                }
-            }
-        }
-    }
-
-    void StaffRedact()
-    {
-        std::string choose, newLogin, newPass;
-        int emId;
         while (true)
         {
-            std::cout << "ID\tЛОгин\tПароль\n\n";
-            for (int i = 0; i < userCount; i++)
-            {
-                std::cout << i + 1 << "\t" << std::left << std::setw(10) << loginArr[i] << "\t" << passwordArr[i] << "\n";
+            std::cout << "\nВведите количество товара для списания: ";
+            std::getline(std::cin, removeStr, '\n');
 
+            if (isStringDigit(removeStr))
+            {
+                remove = std::stoi(removeStr);
+
+                if (remove >= 0 && remove <= countArr[id - 1])
+                {
+                    break;
+                }
+
+                else
+                {
+                    std::cout << "Ошибка ввода!!!\n";
+                }
             }
-            std::cout << "Введите ID сотрудника\t 0 - Выход\nВвод: ";
+        }
+
+        while (true)
+        {
+
+            std::cout << "Списать " << remove << " товара(ов) " << nameArr[id - 1] << " ?";
+            std::cout << "1 - Да\t2 - Нет\t3 - Отмена\n\n";
             std::getline(std::cin, choose, '\n');
-            if (choose == "0")
+
+            if (choose == "1")
+            {
+                countArr[id - 1] -= remove;
+                std::cout << "Товар успешно списан\n\n";
+                exit = true;
+                break;
+            }
+            else if (choose == "2")
             {
                 break;
             }
-            else if (isStringDigit(choose))
+            else if (choose == "3")
             {
-                emId = std::stoi(choose);
-                for (int i = 0; i < userCount; i++)
-                {
-                    if (emId < 1 || emId > userCount)
-                    {
-                        std::cout << "Нет сотрудника с таким ID\n\n";
-                        break;
-                    }
-                    if (i == emId - 1)
-                    {
-                        std::cout << "Введите  логин нового сотрудника: ";
-                        std::getline(std::cin, newLogin, '\n');
-                        std::cout << "Введите пароль нового сотрудника: ";
-                        std::getline(std::cin, newPass, '\n');
+                exit = true;
+                break;
+            }
+            else
+            {
+                std::cout << "Ошибка ввода!!\n";
+            }
+        }
+    }
+}
 
-                        loginArr[i] = newLogin;
-                        passwordArr[i] = newPass;
-                        break;
-                    }
+void StaffRedact()
+{
+    std::string choose, newLogin, newPass;
+    int emId;
+    while (true)
+    {
+        std::cout << "ID\tЛОгин\tПароль\n\n";
+        for (int i = 0; i < userCount; i++)
+        {
+            std::cout << i + 1 << "\t" << std::left << std::setw(10) << loginArr[i] << "\t" << passwordArr[i] << "\n";
+
+        }
+        std::cout << "Введите ID сотрудника\t 0 - Выход\nВвод: ";
+        std::getline(std::cin, choose, '\n');
+        if (choose == "0")
+        {
+            break;
+        }
+        else if (isStringDigit(choose))
+        {
+            emId = std::stoi(choose);
+            for (int i = 0; i < userCount; i++)
+            {
+                if (emId < 1 || emId > userCount)
+                {
+                    std::cout << "Нет сотрудника с таким ID\n\n";
+                    break;
+                }
+                if (i == emId - 1)
+                {
+                    std::cout << "Введите  логин нового сотрудника: ";
+                    std::getline(std::cin, newLogin, '\n');
+                    std::cout << "Введите пароль нового сотрудника: ";
+                    std::getline(std::cin, newPass, '\n');
+
+                    loginArr[i] = newLogin;
+                    passwordArr[i] = newPass;
+                    break;
+                }
                     
-                }
-
             }
-            else
-            {
-                std::cout << "\n\nОшибка ввода!\n\n";
-            }
-        }   
 
-    }
-    void StorageRedact()
-    {
-        std::string choose;
-        std::cout << "Изменить склада магазина";
-        while (true)
+        }
+        else
         {
-            std::cout << "1 - Добавить новый товар \n2 - Изменить название товара\n3 - Удаление товара\n0 - Выход\n\nВвод: ";
-            std::getline(std::cin, choose, '\n');
-            if (choose == "0")
-            {
-               break;
-            }
-            else if (choose == "1")
-            {
-                AddProduct();
-                break;
-            }
-            else if (choose == "2")
-            {
-                break;
-            }
-            else if (choose == "3")
-            {
-                break;
-            }
-            else
-            {
-                std::cout << "\n\nНекоректный вводn\n\n";
-            }
+            std::cout << "\n\nОшибка ввода!\n\n";
+        }
+    }   
+
+}
+void StorageRedact()
+{
+    std::string choose;
+    std::cout << "Изменить склада магазина";
+    while (true)
+    {
+        std::cout << "1 - Добавить новый товар \n2 - Изменить название товара\n3 - Удаление товара\n0 - Выход\n\nВвод: ";
+        std::getline(std::cin, choose, '\n');
+        if (choose == "0")
+        {
+            break;
+        }
+        else if (choose == "1")
+        {
+            AddProduct();
+            break;
+        }
+        else if (choose == "2")
+        {
+            break;
+        }
+        else if (choose == "3")
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "\n\nНекоректный вводn\n\n";
         }
     }
+}
 
 
-    void AddProduct()
+void AddProduct()
+{
+    system("cls");
+    std::string choose;
+    while (true)
     {
-        system("cls");
-        std::string choose;
-        while (true)
+        std::cout << "1 - Добавить новый товар\t0 - Выход\n\nВвод: ";
+        std::getline(std::cin, choose, '\n');
+        if (choose == "0")
         {
-            std::cout << "1 - Добавить новый товар\t0 - Выход\n\nВвод: ";
-            std::getline(std::cin, choose, '\n');
-            if (choose == "0")
+            system("cls");
+            break;
+        }
+        else if (choose == "1")
+        {
+            int* tempId = new int[size];
+            int* tempCount = new int[size];
+            double* tempPrice = new double[size];
+            std::string* tempName = new std::string[size];
+            for (int i = 0; i < size; i++)
             {
-                system("cls");
-                break;
+                tempId[i] = idArr[i];
+                tempCount[i] = countArr[i];
+                tempPrice[i] = priceArr[i];
+                tempName[i] = nameArr[i];
             }
-            else if (choose == "1")
-            {
-                int* tempId = new int[size];
-                int* tempCount = new int[size];
-                double* tempPrice = new double[size];
-                std::string* tempName = new std::string[size];
-                for (int i = 0; i < size; i++)
-                {
-                    tempId[i] = idArr[i];
-                    tempCount[i] = countArr[i];
-                    tempPrice[i] = priceArr[i];
-                    tempName[i] = nameArr[i];
-                }
                 
 
-                std::string newName, newCountStr, newPriseStr;
+            std::string newName, newCountStr, newPriseStr;
 
-                while (true)
-                {
-                    std::cout << "Введите название нового товара: ";
-                    std::getline(std::cin, newName, '\n');
-                }
-
-                delete[] tempId;
-                delete[]tempCount;
-                delete[]tempPrice;
-                delete[]tempName;
-            }
-            else
+            while (true)
             {
-                std::cout << "\n\nНекорректный ввод\n\n";
+                std::cout << "Введите название нового товара: ";
+                std::getline(std::cin, newName, '\n');
             }
-        }
-    }
 
-    template<typename ArrType>
-    void FillStorage(ArrType staicArr[], ArrType dynamicArr[], int size)
-    {
-        for (int i = 0; i < size; i++)
+            delete[] tempId;
+            delete[]tempCount;
+            delete[]tempPrice;
+            delete[]tempName;
+        }
+        else
         {
-            dynamicArr[i] = staicArr[i];
+            std::cout << "\n\nНекорректный ввод\n\n";
         }
     }
-    template <typename ArrType>
-    void PrintStorage(ArrType dinamicArr[])
+}
+
+template<typename ArrType>
+void FillStorage(ArrType staicArr[], ArrType dynamicArr[], int size)
+{
+    for (int i = 0; i < size; i++)
     {
-        for (int i = 0; i < size; i++)
-        {
-            std::cout << dinamicArr[i] << " ";
-        }
-        std::cout << "\n";
+        dynamicArr[i] = staicArr[i];
+    }
+}
+template <typename ArrType>
+void PrintStorage(ArrType dinamicArr[])
+{
+    for (int i = 0; i < size; i++)
+    {
+        std::cout << dinamicArr[i] << " ";
+    }
+    std::cout << "\n";
 
          
-    }
+}
+void Income()
+{
+    std::cout << "\n\t\tОтчет о прибыли\n\n";
+    std::cout << "Прибыль за наличный рассчет:\t\t" << cashMoney << "\n";
+    std::cout << "Прибыль за безналичный расчет:\t\t" << emony << "\n\n\n";
+    std::cout << "Наличные на кассе:\t\t\t" << cash << "\n\n";
+    std::cout << "Итоговая выручка:\t\t\t" << cashMoney + emony << "\n\n";
+}
     
