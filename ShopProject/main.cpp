@@ -637,26 +637,45 @@ void RefilStorage()
     
 void AddEmployee()
 {
+    system("cls");
 
-
-    userCount++;
     std::string* tempLogin = new std::string[userCount];
     std::string* tempPass = new std::string[userCount];
-    std::string newLogin, newPass;
 
+    for (int i = 0; i < userCount; i++)
+    {
+        tempLogin[i] = loginArr[i];
+        tempPass[i] = passwordArr[i];
+    }
+
+    delete[]loginArr;
+    delete[]passwordArr;
+
+    userCount++;
+
+    loginArr = new std::string[userCount];
+    passwordArr = new std::string[userCount];
+
+    for (int i = 0; i < userCount - 1; i++)
+    {
+        loginArr[i] = tempLogin[i];
+        passwordArr[i] = tempPass[i];
+    }
+
+    std::string newLogin, newPass;
     std::cout << "¬ведите логин нового сотрудника: ";
     std::getline(std::cin, newLogin, '\n');
     std::cout << "¬ведите пароль нового сотрудника: ";
     std::getline(std::cin, newPass, '\n');
 
-    tempLogin[userCount - 1] = newLogin;
-    tempPass[userCount - 1] = newPass;
+    loginArr[userCount - 1] = newLogin;
+    passwordArr[userCount - 1] = newPass;
 
-    std::swap(loginArr, tempLogin);
-    std::swap(passwordArr, tempPass);
     delete[]tempLogin;
     delete[]tempPass;
 }
+
+
 void ChangeStaff()
 {
     std::string choose;
