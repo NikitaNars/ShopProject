@@ -215,7 +215,7 @@ void Selling()
     bool isFirst = true;
     sizeCheck = 1;
     long double totalSum{};
-    double discount = 0.1;
+
     double itemOnSale = 0.15;
 
 
@@ -323,7 +323,7 @@ void Selling()
             {
                 if (totalSum >= 100000)
                 {
-                    totalSum -= (totalSum * discount);
+                    totalSum -= (totalSum * 0.1);
                 }
                 PrintCheck(totalSum);
                 std::cout << "\n\n\tИтоговая сумма: " << std::fixed << totalSum << " рублей\n\n\n";
@@ -341,6 +341,9 @@ void Selling()
                         {
                             while (true)
                             {
+                                std::cout << "Доп скидка 2%!!!\n ";
+                                totalSum -= (totalSum * 0.02);
+                                std::cout << "\n\n\tИтоговая сумма: " << std::fixed << totalSum << " рублей\n\n\n";
                                 std::cout << "Введите сумму наличных: ";
                                 std::getline(std::cin, userCash, '\n');
                                 if (!isStringDigit(userCash))
